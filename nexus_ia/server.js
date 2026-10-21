@@ -16,7 +16,7 @@ dotenv.config({
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
-const publicPath = __dirname;
+const publicPath = path.resolve(__dirname, "../public");
 
 app.disable("x-powered-by");
 app.use(express.json({ limit: "12kb" }));
@@ -102,7 +102,7 @@ app.post("/api/chat", limitarChat, async (req, res) => {
     });
 
     const respuesta = await cliente.models.generateContent({
-      model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+      model: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite", 
       contents: mensaje,
       config: {
         systemInstruction: instrucciones,
@@ -142,14 +142,17 @@ app.post("/api/chat", limitarChat, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`NEXUS funcionando en http://localhost:${PORT}`);
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`NEXUS funcionando en http://localhost:${PORT}`);
+    console.log(
+      `API de Gemini: ${
+        process.env.GEMINI_API_KEY
+          ? "configurada"
+          : "falta configurar nexus_ia/.env"
+      }`
+    );
+  });
+}
 
-  console.log(
-    `API de Gemini: ${
-      process.env.GEMINI_API_KEY
-        ? "configurada"
-        : "falta configurar nexus_ia/.env"
-    }`
-  );
-});
+export default app;
